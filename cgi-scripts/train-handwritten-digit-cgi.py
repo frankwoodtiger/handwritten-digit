@@ -15,7 +15,7 @@ class MachineLearning:
 	figureNum = 0
 	EPSILON = 0.08 # sqrt(6 / (784 + 10)
 	lambda_reg = 1          # for regularization term
-	learningRate = 0.3
+	learningRate = 0.03
 	input_layer_size  = 784 # 28x28 Input Images of Digits with 5000 training sample
 	hidden_layer_size = 25  # 25 hidden units
 	output_layer_size = 10
@@ -29,7 +29,7 @@ class MachineLearning:
 		min_cost = J_array.min()
 		delta = J_array[-1] - J_array[0]
 		delta_percent = (delta / J_array[0])*100
-		print 'max cost: {:.3f}\nmin cost: {:.3f}\ndelta: {:.3f}\ndelta %: {:.3f}%'.format(max_cost, min_cost, delta, delta_percent)
+		print 'max cost: {:.9f}\nmin cost: {:.9f}\ndelta: {:.9f}\ndelta %: {:.9f}%'.format(max_cost, min_cost, delta, delta_percent)
 		self.figureNum = self.figureNum + 1
 		plt.figure(self.figureNum)
 		# print J_array
@@ -76,10 +76,9 @@ class MachineLearning:
 
 		return images, labels
 		
-	def setEPSILON(self, X, y):
-		Linput = X.max()
-		Loutput = y.max()
-		self.EPSILON = np.sqrt(6 / (Linput + Loutput))
+	def setEPSILON(self, Linput, Loutput):
+		# 6.0 is important here as it make the expression as float
+		self.EPSILON = np.sqrt(6.0 / (Linput + Loutput))
 		
 	def sigmoid(self, z):
 		return 1.0 / (1.0 + np.exp(-z))
@@ -129,7 +128,10 @@ class MachineLearning:
 				print 'dim(h): {}'.format(h.shape)
 				# print h
 				print 'dim(y_vec): {}'.format(y_vec.shape)
-				# print y_vec
+				print y[i]
+				print y_vec
+				print d3
+				print y_vec - d3
 				
 			# non-vectorized implementation
 			# for k in range(0, self.num_labels):
@@ -169,7 +171,6 @@ class MachineLearning:
 	
 	def trainNN(self, X, y, iter, isThetaExist):
 		m = X.shape[0]
-		self.setEPSILON(X, y)
 		J_array = np.zeros((iter,))
 		
 		# see if there are old thetas to use
@@ -178,8 +179,10 @@ class MachineLearning:
 			theta1 = thetaDict['theta1']
 			theta2 = thetaDict['theta2']
 		else:
-			theta1 = 2*self.EPSILON*np.random.random((self.hidden_layer_size,self.input_layer_size + 1)) - self.EPSILON # 400 input, 25 hidden unit, 10 output
-			theta2 = 2*self.EPSILON*np.random.random((self.output_layer_size,self.hidden_layer_size + 1)) - self.EPSILON # 400 input, 25 hidden unit, 10 output
+			self.setEPSILON(self.input_layer_size, self.output_layer_size)
+			print "EPSILON = {:.9f}".format(self.EPSILON)
+			theta1 = 2*self.EPSILON*np.random.random((self.hidden_layer_size,self.input_layer_size + 1)) - self.EPSILON # 784 input, 25 hidden unit, 10 output
+			theta2 = 2*self.EPSILON*np.random.random((self.output_layer_size,self.hidden_layer_size + 1)) - self.EPSILON # 784 input, 25 hidden unit, 10 output
 			# dim(theta2) = 10x26
 			# dim(theta1) = 25x785
 			
@@ -191,8 +194,8 @@ class MachineLearning:
 			# print J_array[i]
 			THETA1_grad = dataSet['THETA1_grad']
 			THETA2_grad = dataSet['THETA2_grad']
-			theta1 = theta1 - np.multiply(self.learningRate/m, THETA1_grad)
-			theta2 = theta2 - np.multiply(self.learningRate/m, THETA2_grad)
+			theta1 = theta1 - np.multiply(self.learningRate, THETA1_grad)
+			theta2 = theta2 - np.multiply(self.learningRate, THETA2_grad)
 		
 		if (J_array[-1] - J_array[0]) < 0:
 			self.saveMat('thetas.mat', theta1, theta2)
@@ -233,12 +236,12 @@ class MachineLearning:
 	
 	def measureAccurancy(self, theta1, theta2, X, y):
 		p = self.batchPredict(theta1, theta2, X) # (m, 1=num_labels) e.g (5000, 10)
-		# print p.shape
-		# print y.shape
-		# print p.min()
-		# print p.max()
-		# print y.min()
-		# print y.max()
+		print "p.shape: {}".format(p.shape)
+		print "y.shape: {}".format(y.shape)
+		print "p.min: {}".format(p.min())
+		print "p.max: {}".format(p.max())
+		print "y.min: {}".format(y.min())
+		print "y.max: {}".format(y.max())
 		return np.mean(p == y)*100
 	
 	def saveMat(self, filename, theta1, theta2):
@@ -250,20 +253,32 @@ if __name__=='__main__':
 	# iter = int(data['iter'].value)
 	
 	ml = MachineLearning()
+	
+	images_t, labels_t = ml.load_mnist('testing')
+	X_t = np.reshape(images_t, (10000, 784)).astype(float)
+	y_t = labels_t.astype(float)
+	
 	images, labels = ml.load_mnist('training')
 	# image is 60000 x 28 x 28 data
 	# labels is 60000 x 1
 	
-	X = np.reshape(images[0:5000], (5000, 784)) # 5000 x 784
-	y = labels[0:5000] # 5000 x 1
+	X = np.reshape(images[0:5000], (5000, 784)).astype(float) # 5000 x 784
+	y = labels[0:5000].astype(float) # 5000 x 1
+	
+	# X = np.reshape(images, (60000, 784)) # 60000 x 784
+	# y = labels # 60000 x 1
 	
 	# dataSet = ml.trainNN(X, y, iter, False) # used for the first time to generate thetas
-	dataSet = ml.trainNN(X, y, 1000, True)
-	accurancyStr = 'With Weight trained from scratch: {}% accurancy'.format(ml.measureAccurancy(dataSet['theta1'], dataSet['theta2'], X, y))
+	dataSet = ml.trainNN(X, y, 10, True)
+	accurancyStr = 'With Weight trained from scratch: {}% accurancy'.format(ml.measureAccurancy(dataSet['theta1'], dataSet['theta2'], X_t, y_t))
 	J_array =  dataSet['J_array']
 	ml.displayCostVsIter(J_array)
 	
 	print "Content-Type: text/plain;charset=utf-8\r\n" 
 	print accurancyStr
+	# print X.min()
+	# print X.max()
+	# print y.min()
+	# print y.max()
 	
 	ml.showAllGraphs()
