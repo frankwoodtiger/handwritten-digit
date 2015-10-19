@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		<link rel="stylesheet" type="text/css" href="css/theme.css">
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<script src="js/paint.js"></script>
+		<script src="js/button-logic.js"></script>
+		<script src="js/iteration-slider.js"></script>
+	</head>
+	<body>
+		<div id="container">
+			<div id="canvas-div">
+				<p>Please write an handwritten digit inside the black box</p>
+				<!-- Note that the size of canvas must be defined inlinely without dimension-->
+				<canvas id="canvas" width="280" height="280"></canvas>
+				<span style="vertical-align:25%">Actual size (28 x 28) seen in Python:</span> <canvas id="small-canvas" width="28" height="28"></canvas>
+			</div>
+			<a class="button-submit" type="button">submit</a> <a class="button-save" type="button">save</a> <a class="button-clear" type="button">clear</a>
+			<br><br>
+			<a class="button-train" type="button">train</a> <span>with <span id="iter-num"></span> iterations</span>
+			<br><br>
+			<div id="slider"></div>
+		</div>
+	</body>
+</html>

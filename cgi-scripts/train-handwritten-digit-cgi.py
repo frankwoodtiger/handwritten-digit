@@ -6,7 +6,7 @@ import cgi, cgitb
 import numpy as np
 import scipy.io as sio
 from random import randint
-import sys, struct, json
+import sys, struct, json, warnings
 from array import array
 
 import matplotlib.pyplot as plt # need to comment out for CGI
@@ -15,7 +15,7 @@ class MachineLearning:
 	figureNum = 0
 	EPSILON = 0.08 # sqrt(6 / (784 + 10)
 	lambda_reg = 1          # for regularization term
-	learningRate = 0.03
+	learningRate = 0.25
 	input_layer_size  = 784 # 28x28 Input Images of Digits with 5000 training sample
 	hidden_layer_size = 25  # 25 hidden units
 	output_layer_size = 10
@@ -81,7 +81,8 @@ class MachineLearning:
 		self.EPSILON = np.sqrt(6.0 / (Linput + Loutput))
 		
 	def sigmoid(self, z):
-		return 1.0 / (1.0 + np.exp(-z))
+		sigmoid_y = 1.0 / (1.0 + np.exp(-z))
+		return sigmoid_y
 	
 	def linearCombo(self, theta, X):
 		# Theta1: 25x785
@@ -248,7 +249,7 @@ class MachineLearning:
 		sio.savemat(filename, dict(theta1=theta1, theta2=theta2))
 		
 if __name__=='__main__':
-	cgitb.enable()
+	# cgitb.enable()
 	data = cgi.FieldStorage()
 	# iter = int(data['iter'].value)
 	
@@ -262,15 +263,15 @@ if __name__=='__main__':
 	# image is 60000 x 28 x 28 data
 	# labels is 60000 x 1
 	
-	X = np.reshape(images[0:5000], (5000, 784)).astype(float) # 5000 x 784
-	y = labels[0:5000].astype(float) # 5000 x 1
+	X = np.reshape(images[0:60000], (60000, 784)).astype(float) # 5000 x 784
+	y = labels[0:60000].astype(float) # 5000 x 1
 	
 	# X = np.reshape(images, (60000, 784)) # 60000 x 784
 	# y = labels # 60000 x 1
 	
 	# dataSet = ml.trainNN(X, y, iter, False) # used for the first time to generate thetas
-	dataSet = ml.trainNN(X, y, 10, True)
-	accurancyStr = 'With Weight trained from scratch: {}% accurancy'.format(ml.measureAccurancy(dataSet['theta1'], dataSet['theta2'], X_t, y_t))
+	dataSet = ml.trainNN(X, y, 100, True)
+	accurancyStr = 'With Weight trained from scratch and with test set: {}% accurancy'.format(ml.measureAccurancy(dataSet['theta1'], dataSet['theta2'], X_t, y_t))
 	J_array =  dataSet['J_array']
 	ml.displayCostVsIter(J_array)
 	
